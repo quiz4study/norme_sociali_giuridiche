@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Norme: Sociali o Giuridiche?</title>
+    <!-- Caricamento di Tailwind CSS per lo styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stile personalizzato per il font e il body */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Contenitore Principale del Quiz -->
+    <div id="quiz-container" class="bg-white p-8 md:p-12 rounded-xl shadow-2xl w-full max-w-lg transition-all duration-300">
+        <h1 class="text-3xl font-extrabold text-center text-indigo-700 mb-6 border-b pb-3">
+            Norme: Sociali o Giuridiche?
+        </h1>
+        <p class="text-center text-gray-600 mb-8">
+            Decidi se l'esempio descrive una **Norma Sociale** (regola di comportamento) o una **Norma Giuridica** (legge statale).
+        </p>
+
+        <!-- Area della Domanda -->
+        <div id="question-area" class="min-h-[100px] flex items-center justify-center bg-indigo-50/50 p-6 rounded-lg mb-8 shadow-inner">
+            <p id="question-text" class="text-xl font-semibold text-gray-800 text-center">
+                Caricamento della domanda...
+            </p>
+        </div>
+
+        <!-- Area dei Bottoni di Scelta -->
+        <div id="answer-buttons" class="grid grid-cols-2 gap-4">
+            <button onclick="checkAnswer('Sociale')"
+                    class="answer-btn bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-150 ease-in-out transform hover:scale-[1.02]">
+                Norma Sociale
+            </button>
+            <button onclick="checkAnswer('Giuridica')"
+                    class="answer-btn bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-150 ease-in-out transform hover:scale-[1.02]">
+                Norma Giuridica
+            </button>
+        </div>
+
+        <!-- Messaggio di Feedback -->
+        <div id="feedback-message" class="text-center text-lg font-bold mt-6 min-h-[30px]"></div>
+
+        <!-- Area del Punteggio e Progresso -->
+        <div class="mt-8 pt-4 border-t flex justify-between items-center text-gray-700">
+            <span id="score-display" class="text-xl font-bold text-indigo-700">Punteggio: 0</span>
+            <span id="progress-display" class="text-sm font-medium">Domanda 0 di 15</span>
+        </div>
+
+    </div>
+
+    <!-- Modale Risultati (QUI C'È IL FEEDBACK FINALE E IL TASTO RIPROVA) -->
+    <div id="results-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md text-center">
+            <h2 id="final-title" class="text-3xl font-extrabold text-indigo-700 mb-4">Quiz Completato!</h2>
+            
+            <!-- Risultato -->
+            <p id="final-score-text" class="text-2xl font-semibold text-gray-800 mb-2">Il tuo risultato: 0 / 15</p>
+            
+            <!-- Messaggio di incoraggiamento dinamico -->
+            <p id="final-message" class="text-lg text-gray-600 mb-8">Messaggio di feedback...</p>
+
+            <button onclick="restartQuiz()"
+                    id="restart-button"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-150 ease-in-out transform hover:scale-[1.03]">
+                Riprova
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+        // Array delle domande: { scenario: string, tipo: 'Sociale' | 'Giuridica' }
+        // NUOVI 15 ESEMPI BASATI SULLE TUE INDICAZIONI
+        const questions = [
+            {
+                scenario: "Masticare a bocca chiusa durante un pasto in compagnia.",
+                tipo: 'Sociale'
+            },
+            {
+                scenario: "È vietato gettare i rifiuti per terra (littering) in una piazza pubblica.",
+                tipo: 'Giuridica'
+            },
+            {
+                scenario: "Firmare un contratto di acquisto quando si compra una casa o un oggetto di valore.",
+                tipo: 'Giuridica'
+            },
+            {
+                scenario: "Non superare le altre persone che stanno aspettando in fila per l'autobus o la cassa.",
+                tipo: 'Sociale'
+            },
+            {
+                scenario: "È vietato danneggiare i beni pubblici, come panchine o segnali stradali.",
+                tipo: 'Giuridica'
+            },
+            {
+                scenario: "Spegnere o mettere in modalità silenziosa il cellulare in teatro o durante una lezione.",
+                tipo: 'Sociale'
+            },
+            {
+                scenario: "È obbligatorio denunciare lo smarrimento della propria carta d'identità alle autorità.",
+                tipo: 'Giuridica'
+            },
+            {
+                scenario: "Non mandare messaggi o chiamare sul tardi la sera, a meno che non sia urgente.",
+                tipo: 'Sociale'
+            },
+            {
+                scenario: "Usare un documento d'identità falso per comprare alcolici in un supermercato.",
+                tipo: 'Giuridica'
+            },
+            {
+                scenario: "Separare carta e plastica nei contenitori del riciclo (raccolta differenziata).",
+                tipo: 'Sociale' 
+            },
+            { 
+                scenario: "È obbligatorio pagare le multe stradali entro i termini stabiliti.", 
+                tipo: 'Giuridica' 
+            },
+            { 
+                scenario: "Rivolgersi con un tono di voce calmo e rispettoso agli sconosciuti per strada.", 
+                tipo: 'Sociale' 
+            },
+            { 
+                scenario: "Non si possono gettare mozziconi di sigaretta o altri rifiuti dal finestrino di un'automobile.", 
+                tipo: 'Giuridica' 
+            },
+            { 
+                scenario: "Scusarsi immediatamente e offrire aiuto se si urta accidentalmente qualcuno.", 
+                tipo: 'Sociale' 
+            },
+            { 
+                scenario: "È obbligatorio registrare la nascita di un bambino all'anagrafe del Comune.", 
+                tipo: 'Giuridica' 
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        const totalQuestions = questions.length; // Sarà 15
+
+        const questionTextElement = document.getElementById('question-text');
+        const scoreDisplay = document.getElementById('score-display');
+        const progressDisplay = document.getElementById('progress-display');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const resultsModal = document.getElementById('results-modal');
+        const finalScoreText = document.getElementById('final-score-text');
+        const finalMessage = document.getElementById('final-message');
+        const answerButtons = document.querySelectorAll('.answer-btn');
+        // Riferimento al pulsante di riprova (Aggiunto per l'id)
+        const restartButton = document.getElementById('restart-button'); 
+
+        // Funzione per mescolare l'array delle domande
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Funzione per caricare la domanda corrente
+        function loadQuestion() {
+            if (currentQuestionIndex < totalQuestions) {
+                const q = questions[currentQuestionIndex];
+                questionTextElement.textContent = q.scenario;
+                // Aggiornamento del display progresso
+                progressDisplay.textContent = `Domanda ${currentQuestionIndex + 1} di ${totalQuestions}`;
+                feedbackMessage.textContent = '';
+                // Riabilita i bottoni e rimuovi classi di feedback
+                answerButtons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.classList.remove('bg-green-700', 'bg-red-700', 'ring-4', 'ring-opacity-50', 'opacity-70');
+                    btn.classList.add('bg-green-500', 'hover:bg-green-600', 'bg-red-500', 'hover:bg-red-600');
+                });
+            } else {
+                showResults();
+            }
+        }
+
+        // Funzione per controllare la risposta
+        function checkAnswer(selectedTipo) {
+            const correctTipo = questions[currentQuestionIndex].tipo;
+            const isCorrect = selectedTipo === correctTipo;
+
+            // Disabilita i bottoni dopo la risposta
+            answerButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.remove('hover:bg-green-600', 'hover:bg-red-600', 'hover:scale-[1.02]');
+                btn.classList.add('opacity-70');
+            });
+
+            // Trova e colora i bottoni per il feedback visivo
+            answerButtons.forEach(btn => {
+                // Rimuovi tutte le classi di colore temporanee
+                btn.classList.remove('bg-green-700', 'bg-red-700', 'ring-green-400', 'ring-red-400', 'ring-4', 'bg-green-500', 'bg-red-500');
+
+                if (btn.textContent.includes(correctTipo)) {
+                    // Bottone corretto
+                    btn.classList.add('bg-green-700', 'ring-green-400', 'ring-4');
+                } else if (btn.textContent.includes(selectedTipo) && !isCorrect) {
+                    // Bottone sbagliato selezionato
+                    btn.classList.add('bg-red-700', 'ring-red-400', 'ring-4');
+                } else {
+                    // Bottone non selezionato e non corretto (torna al colore base)
+                    if (btn.textContent.includes('Sociale')) {
+                        btn.classList.add('bg-green-500');
+                    } else {
+                        btn.classList.add('bg-red-500');
+                    }
+                }
+            });
+
+
+            if (isCorrect) {
+                score++;
+                feedbackMessage.textContent = "Corretto! Ottimo lavoro.";
+                feedbackMessage.classList.remove('text-red-600');
+                feedbackMessage.classList.add('text-green-600');
+            } else {
+                feedbackMessage.textContent = `Sbagliato. La risposta corretta era: Norma ${correctTipo}.`;
+                feedbackMessage.classList.remove('text-green-600');
+                feedbackMessage.classList.add('text-red-600');
+            }
+
+            scoreDisplay.textContent = `Punteggio: ${score}`;
+
+            // Passa alla domanda successiva dopo un breve ritardo
+            setTimeout(() => {
+                currentQuestionIndex++;
+                loadQuestion();
+            }, 1500); // 1.5 secondi di pausa
+        }
+
+        // Funzione per generare il messaggio di feedback finale (Aggiornata per 15 domande)
+        function getFinalFeedback(finalScore) {
+            if (finalScore === totalQuestions) {
+                return "15 su 15! Fenomenale! Hai dimostrato una conoscenza eccellente delle differenze tra regole sociali e leggi. Complimenti!";
+            } else if (finalScore >= 12) { // 80% (12 o più)
+                return "Livello di competenza raggiunto! Hai una padronanza eccezionale della distinzione tra i due tipi di norme. Ben fatto!";
+            } else if (finalScore >= 6) { // 40% di 15 è 6
+                return "Bene. Hai identificato molte norme correttamente, ma c'è ancora spazio per migliorare. Riprova e concentrati sulle differenze di sanzione tra i due tipi di norme!";
+            } else {
+                return "Non ti preoccupare! La pratica rende perfetti. Riprova subito, rileggendo attentamente le domande per capire meglio quando una norma è una semplice abitudine e quando è una legge.";
+            }
+        }
+
+        // Funzione per mostrare i risultati finali
+        function showResults() {
+            finalScoreText.textContent = `Il tuo risultato: ${score} / ${totalQuestions}`;
+            finalMessage.textContent = getFinalFeedback(score); // Genera il messaggio dinamico
+
+            // LOGICA PER NASCONDERE IL PULSANTE SE >= 80% (12 su 15)
+            if (score >= totalQuestions * 0.8) {
+                restartButton.classList.add('hidden');
+            } else {
+                restartButton.classList.remove('hidden');
+            }
+
+            resultsModal.classList.remove('hidden');
+            resultsModal.classList.add('flex');
+        }
+
+        // Funzione per riavviare il quiz
+        function restartQuiz() {
+            shuffleArray(questions); // Mescola le domande ad ogni riavvio
+            currentQuestionIndex = 0;
+            score = 0;
+            scoreDisplay.textContent = `Punteggio: 0`;
+            resultsModal.classList.add('hidden');
+            resultsModal.classList.remove('flex');
+            
+            // Assicura che il pulsante sia visibile se si riavvia prima di raggiungere l'80%
+            restartButton.classList.remove('hidden'); 
+            
+            loadQuestion();
+        }
+
+        // Inizializza il quiz al caricamento della pagina
+        document.addEventListener('DOMContentLoaded', () => {
+            restartQuiz(); // Chiama restartQuiz per mescolare le domande e avviare il gioco
+        });
+    </script>
+</body>
+</html>
